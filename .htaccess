@@ -1,0 +1,39 @@
+# ----------------------------------------------------------------------
+# 1. SECURITY & FILE PROTECTION
+# ----------------------------------------------------------------------
+
+# Prevent directory browsing/listing
+Options -Indexes
+
+# Protect sensitive database config and system files from direct web access
+<FilesMatch "^\.ht|(^|/)db\.php$|(^|/)config\.php$">
+    Require all denied
+</FilesMatch>
+
+# Prevent access to dotfiles (.git, .env, etc.)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ----------------------------------------------------------------------
+# 2. SECURITY HEADERS
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Prevent clickjacking attacks by blocking iframe embedding
+    Header set X-Frame-Options "DENY"
+
+    # Block MIME-type sniffing
+    Header set X-Content-Type-Options "nosniff"
+
+    # Enforce XSS Protection filter in browsers
+    Header set X-XSS-Protection "1; mode=block"
+
+    # Restrict referrer leakage
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 3. DEFAULT DOCUMENT & ROUTING
+# ----------------------------------------------------------------------
+# Ensure index.html serves as the primary landing/login page
+DirectoryIndex index.html index.php

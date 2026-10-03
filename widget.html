@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Reminders</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#2E6F4E;
+    --forest-dark:#1F4E37;
+    --sage:#BFE1CD;
+    --sage-soft:#E7F3EB;
+    --cream:#FAF6EC;
+    --clay:#DE9B4C;
+    --ink:#1D2B22;
+    --ink-soft:#5C6B60;
+    --line:#DCD5C2;
+    --danger:#B4483A;
+    --shadow: 0 12px 30px -14px rgba(29,43,34,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, #F1EADA 0%, transparent 45%),
+      var(--cream);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .hidden{display:none !important;}
+  button{font-family:inherit; cursor:pointer;}
+  select{font-family:inherit;}
+  a{color:inherit;}
+
+  .widget{
+    width:100%; max-width:640px; background:#fff; border-radius:20px;
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .w-top{
+    background:linear-gradient(160deg, var(--forest) 0%, var(--forest-dark) 100%);
+    color:#fff; padding:24px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .w-top .title-wrap{display:flex; align-items:center; gap:14px;}
+  .w-top .glyph{
+    width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.14);
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    border:1px solid rgba(255,255,255,0.25); flex-shrink:0;
+  }
+  .w-top h2{font-size:21px; font-weight:600;}
+  .w-top .sub{font-family:'IBM Plex Mono',monospace; font-size:11px; color:#C9E1D2; margin-top:3px; letter-spacing:.04em;}
+  .back-link{
+    font-size:12.5px; color:#DCEFE2; text-decoration:none; border:1px solid rgba(255,255,255,0.35);
+    padding:8px 12px; border-radius:8px; white-space:nowrap; flex-shrink:0;
+  }
+  .back-link:hover{background:rgba(255,255,255,0.15);}
+
+  .perm-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--sage-soft); padding:12px 28px; font-size:13px; color:var(--ink-soft);
+    border-bottom:1px solid var(--line);
+  }
+  .perm-banner button{
+    background:var(--clay); color:#2B1B05; border:none; border-radius:8px;
+    padding:8px 14px; font-weight:600; font-size:13px; flex-shrink:0;
+  }
+  .perm-banner.ok{color:var(--forest-dark);}
+
+  .w-body{padding:20px 24px 26px; max-height:70vh; overflow-y:auto;}
+  .empty-state{text-align:center; padding:50px 20px; color:var(--ink-soft);}
+  .empty-state .glyph{font-size:34px; margin-bottom:10px;}
+  .empty-state p{font-size:14px; max-width:300px; margin:6px auto 0; line-height:1.5;}
+
+  .day-group{margin-bottom:18px;}
+  .day-group h3{
+    font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace; margin-bottom:8px; padding-left:2px;
+  }
+
+  .rem-card{
+    display:flex; align-items:center; gap:14px; background:var(--sage-soft);
+    border-radius:12px; padding:12px 14px; margin-bottom:8px; border-left:5px solid var(--forest);
+  }
+  .rem-card.off{border-left-color:var(--line); opacity:.6;}
+  .rem-card .time-rail{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--forest-dark);
+    min-width:64px; line-height:1.4;
+  }
+  .rem-card .info{flex:1; min-width:0;}
+  .rem-card .info .subj{font-family:'Fraunces',serif; font-size:15.5px; font-weight:600;}
+  .rem-card .info .meta{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .rem-card .controls{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .rem-card select{
+    padding:7px 10px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; font-size:12.5px; color:var(--ink);
+  }
+  .bell-toggle{
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--line);
+    background:#fff; font-size:15px; display:flex; align-items:center; justify-content:center;
+  }
+  .bell-toggle.active{background:var(--forest); border-color:var(--forest); color:#fff;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:11px 20px; border-radius:999px;
+    font-size:13.5px; font-weight:500; opacity:0; pointer-events:none; transition:.25s; z-index:60;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,-6px);}
+
+  /* dark mode + micro-interactions */
+  [data-theme=dark]{--cream:#101712; --sage-soft:#222F27; --ink:#E8F0EA; --ink-soft:#9FB2A5; --line:#2C3A32; --forest:#5FAE82;}
+  [data-theme=dark] body{background:#101712;}
+  [data-theme=dark] .widget{background:#18221C;}
+  [data-theme=dark] .rem-card select,[data-theme=dark] .bell-toggle{background:#18221C; color:var(--ink);}
+  [data-theme=dark] .bell-toggle.active{color:#0E1A12;}
+  [data-theme=dark] .rem-card .time-rail{color:#9FD6B6;}
+  .rem-card{transition:transform .15s, box-shadow .15s;}
+  .rem-card:hover{transform:translateY(-1px); box-shadow:0 6px 16px -10px rgba(0,0,0,.35);}
+  .bell-toggle,.perm-banner button,.back-link{transition:transform .15s, background .15s;}
+  .bell-toggle:hover{transform:scale(1.08);}
+  .bell-toggle:active,.perm-banner button:active{transform:scale(.94);}
+  .day-group h3{position:sticky; top:-20px; background:#fff; padding:6px 2px; z-index:1;}
+  [data-theme=dark] .day-group h3{background:#18221C;}
+  :focus-visible{outline:2px solid var(--clay); outline-offset:2px;}
+  @media (max-width:560px){
+    body{padding:12px; align-items:flex-start;}
+    .w-top{padding:18px;} .perm-banner{padding:12px 18px; flex-wrap:wrap;}
+    .rem-card{flex-wrap:wrap;} .rem-card .controls{width:100%; justify-content:space-between;}
+    .rem-card select{flex:1; min-height:44px; font-size:16px;} .bell-toggle{width:44px; height:44px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="w-top">
+    <div class="title-wrap">
+      <div class="glyph">🔔</div>
+      <div>
+        <h2>Class Reminders</h2>
+        <div class="sub" id="welcomeLine">ID · —</div>
+      </div>
+    </div>
+    <a class="back-link" id="backLink" href="dashboard.html">← Back to schedule</a>
+  </div>
+
+  <div class="perm-banner" id="permBanner">
+    <span id="permText">Notifications are off — enable them so reminders can pop up.</span>
+    <button id="permBtn">Enable Notifications</button>
+  </div>
+
+  <div class="w-body" id="widgetBody"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const MINUTE_OPTIONS = [0,5,10,15,20,30,45,60];
+
+let currentUser = null; // Object { id, student_id }
+let classes = [];
+let reminders = {}; // { [classId]: { enabled: bool, minutes: number } }
+let firedToday = new Set(); // classId+dateStr already notified this session
+
+const $ = id => document.getElementById(id);
+
+function showToast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+function escapeHtml(s){
+  const d = document.createElement("div");
+  d.textContent = s || "";
+  return d.innerHTML;
+}
+
+function to12h(t){
+  if(!t) return "";
+  let [h,m] = t.split(":").map(Number);
+  const suffix = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2,'0')} ${suffix}`;
+}
+
+/* ---------- INIT ---------- */
+async function init(){
+  try {
+    const response = await fetch('api/auth.php?action=session');
+    const result = await response.json();
+    if(!response.ok || result.status !== 'success' || !result.user){
+      localStorage.removeItem('user');
+      showSessionExpired();
+      return;
+    }
+
+    currentUser = result.user;
+    localStorage.removeItem('user');
+    $("welcomeLine").textContent = `ID · ${currentUser.student_id}`;
+    $("backLink").href = `dashboard.html`;
+
+    await fetchClasses();
+
+    const remData = localStorage.getItem(`reminders_${currentUser.id}`);
+    reminders = remData ? JSON.parse(remData) : {};
+
+    setupPermissionBanner();
+    render();
+    setInterval(checkReminders, 15000);
+    startIdleTimer();
+  } catch(e) {
+    showSessionExpired();
+  }
+}
+
+function showSessionExpired(){
+    $("widgetBody").innerHTML = `
+      <div class="empty-state">
+        <div class="glyph">⚠️</div>
+        <h3>Session Expired</h3>
+        <p>Please log in through the main dashboard to configure your reminders.</p>
+      </div>`;
+}
+
+/* ---------- FETCH CLASSES FROM PHP API ---------- */
+async function fetchClasses(){
+  try {
+    const response = await fetch('api/schedule.php');
+    if(response.status === 401){
+      showSessionExpired();
+      return;
+    }
+    const result = await response.json();
+
+    if(response.ok && result.status === 'success'){
+      classes = (result.data || []).map(c => ({
+        id: c.id,
+        day: c.day,
+        subject: c.subject_title || c.subject || "",
+        code: c.subject_code || c.code || "",
+        start: c.start_time || c.start || "",
+        end: c.end_time || c.end || "",
+        room: c.room || "",
+        professor: c.professor || ""
+      }));
+    } else {
+      classes = [];
+    }
+  } catch(e) {
+    console.error("Failed to load schedule from database:", e);
+    showToast("Server connection failed");
+  }
+}
+
+/* ---------- AUTO-LOGOUT ON INACTIVITY ---------- */
+const IDLE_LIMIT_MS = 20 * 60 * 1000; // 20 minutes
+let idleTimer;
+function resetIdleTimer(){
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    endSession();
+  }, IDLE_LIMIT_MS);
+}
+async function endSession(){
+  try { await fetch('api/auth.php?action=logout', {method: 'POST'}); } catch(e) {}
+  localStorage.removeItem('user');
+  window.location.href = 'index.html?timeout=1';
+}
+function startIdleTimer(){
+  ["click","keydown","mousemove","scroll","touchstart"].forEach(evt =>
+    document.addEventListener(evt, resetIdleTimer, {passive:true})
+  );
+  resetIdleTimer();
+}
+
+/* ---------- NOTIFICATION PERMISSION ---------- */
+function setupPermissionBanner(){
+  const banner = $("permBanner");
+  const text = $("permText");
+  const btn = $("permBtn");
+
+  function refresh(){
+    if(!("Notification" in window)){
+      text.textContent = "This browser doesn't support notifications.";
+      btn.classList.add("hidden");
+      return;
+    }
+    if(Notification.permission === "granted"){
+      banner.classList.add("ok");
+      text.textContent = "Notifications are enabled. Reminders will pop up while this tab is open.";
+      btn.classList.add("hidden");
+    } else if(Notification.permission === "denied"){
+      banner.classList.remove("ok");
+      text.textContent = "Notifications are blocked in your browser settings — enable them there to get reminders.";
+      btn.classList.add("hidden");
+    } else {
+      banner.classList.remove("ok");
+      text.textContent = "Notifications are off — enable them so reminders can pop up.";
+      btn.classList.remove("hidden");
+    }
+  }
+
+  btn.onclick = async () => {
+    try{
+      await Notification.requestPermission();
+    }catch(e){}
+    refresh();
+  };
+
+  refresh();
+}
+
+/* ---------- STORAGE ---------- */
+function saveReminders(){
+  try{
+    localStorage.setItem(`reminders_${currentUser.id}`, JSON.stringify(reminders));
+  }catch(e){
+    showToast("Couldn't save reminder settings");
+    console.error(e);
+  }
+}
+
+function getReminder(classId){
+  return reminders[classId] || {enabled:false, minutes:15};
+}
+
+/* ---------- RENDER ---------- */
+function render(){
+  const body = $("widgetBody");
+  body.innerHTML = "";
+
+  if(classes.length === 0){
+    body.innerHTML = `
+      <div class="empty-state">
+        <div class="glyph">🗒️</div>
+        <h3>No classes yet</h3>
+        <p>Add classes from your dashboard first, then come back here to set reminders for each one.</p>
+      </div>`;
+    return;
+  }
+
+  DAYS.forEach(day => {
+    const dayClasses = classes
+      .filter(c => c.day === day)
+      .sort((a,b) => a.start.localeCompare(b.start));
+    if(dayClasses.length === 0) return;
+
+    const group = document.createElement("div");
+    group.className = "day-group";
+    group.innerHTML = `<h3>${day}</h3>`;
+
+    dayClasses.forEach(c => {
+      const rem = getReminder(c.id);
+      const card = document.createElement("div");
+      card.className = "rem-card" + (rem.enabled ? "" : " off");
+      card.innerHTML = `
+        <div class="time-rail">${to12h(c.start)}</div>
+        <div class="info">
+          <div class="subj">${escapeHtml(c.subject)}</div>
+          <div class="meta">${escapeHtml(c.code || "")}${c.room ? " · " + escapeHtml(c.room) : ""}</div>
+        </div>
+        <div class="controls">
+          <select class="mins-select">
+            ${MINUTE_OPTIONS.map(m => `<option value="${m}" ${rem.minutes===m?"selected":""}>${m===0 ? "At start time" : m + " min before"}</option>`).join("")}
+          </select>
+          <button class="bell-toggle ${rem.enabled ? "active" : ""}" title="${rem.enabled ? "Reminder on" : "Reminder off"}">🔔</button>
+        </div>
+      `;
+
+      const select = card.querySelector(".mins-select");
+      const bell = card.querySelector(".bell-toggle");
+
+      select.onchange = () => {
+        const current = getReminder(c.id);
+        reminders[c.id] = {enabled: current.enabled, minutes: Number(select.value)};
+        saveReminders();
+      };
+
+      bell.onclick = () => {
+        const current = getReminder(c.id);
+        const nowEnabled = !current.enabled;
+        reminders[c.id] = {enabled: nowEnabled, minutes: current.minutes};
+        saveReminders();
+        card.classList.toggle("off", !nowEnabled);
+        bell.classList.toggle("active", nowEnabled);
+        bell.title = nowEnabled ? "Reminder on" : "Reminder off";
+        showToast(nowEnabled ? `Reminder set for ${c.subject}` : `Reminder turned off for ${c.subject}`);
+      };
+
+      group.appendChild(card);
+    });
+
+    body.appendChild(group);
+  });
+}
+
+/* ---------- REMINDER CHECK LOOP ---------- */
+function checkReminders(){
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+
+  const now = new Date();
+  const todayName = DAYS[(now.getDay() + 6) % 7]; // getDay(): Sun=0 -> map to Monday-first DAYS
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const dateKey = now.toDateString();
+
+  classes.forEach(c => {
+    if(c.day !== todayName) return;
+    const rem = getReminder(c.id);
+    if(!rem.enabled) return;
+
+    const [sh, sm] = c.start.split(":").map(Number);
+    const startMinutes = sh * 60 + sm;
+    const targetMinutes = startMinutes - rem.minutes;
+    const fireKey = `${c.id}_${dateKey}`;
+
+    if(nowMinutes === targetMinutes && !firedToday.has(fireKey)){
+      firedToday.add(fireKey);
+      const label = rem.minutes === 0
+        ? `${c.subject} is starting now`
+        : `${c.subject} starts in ${rem.minutes} min`;
+      new Notification("Class Reminder", {
+        body: `${label}${c.room ? " · " + c.room : ""} (${to12h(c.start)})`,
+        icon: undefined
+      });
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>

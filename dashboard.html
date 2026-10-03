@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Scheduler — Dashboard</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4EFE6; --surface:#fff; --soft:#EBF3ED; --ink:#1D2B22; --ink2:#5B6A60; --line:#DCE5DE;
+    --brand:#28593F; --brand-d:#1E4430; --on-brand:#fff; --side:#28593F; --side-ink:#DCEFE2;
+    --accent:#D99B43; --danger:#B4483A; --shadow:0 1px 2px rgba(29,43,34,.06),0 8px 24px -12px rgba(29,43,34,.2);
+    --cs:45%; --cl:91%; --cb:38%; --ci:20%;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  }
+  [data-theme=dark]{
+    --bg:#101712; --surface:#18221C; --soft:#222F27; --ink:#E8F0EA; --ink2:#9FB2A5; --line:#2C3A32;
+    --brand:#5FAE82; --brand-d:#7CC79D; --on-brand:#0E1A12; --side:#0C130F; --side-ink:#A9C2B3;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+    --cs:28%; --cl:21%; --cb:62%; --ci:90%;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Inter',sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; line-height:1.45; transition:background .25s,color .25s;}
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0; font-weight:600;}
+  button,input,select{font-family:inherit;}
+  button{cursor:pointer;}
+  .hidden{display:none !important;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .app{display:grid; grid-template-columns:232px 1fr; min-height:100vh;}
+
+  /* SIDEBAR */
+  .side{background:var(--side); color:var(--side-ink); padding:var(--s5) var(--s4); display:flex; flex-direction:column; gap:var(--s2); position:sticky; top:0; height:100vh;}
+  .brand{display:flex; align-items:center; gap:var(--s3); padding:0 var(--s2) var(--s5); color:#fff;}
+  .brand .mark{width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,.12); display:grid; place-items:center;}
+  .brand h1{font-size:19px;}
+  .nav-btn{display:flex; align-items:center; gap:var(--s3); width:100%; padding:11px 12px; border:0; border-radius:10px; background:transparent; color:inherit; font-size:14.5px; font-weight:500; text-align:left; text-decoration:none; transition:background .15s,transform .15s;}
+  .nav-btn svg{width:20px; height:20px; flex-shrink:0;}
+  .nav-btn:hover{background:rgba(255,255,255,.09);}
+  .nav-btn:active{transform:scale(.98);}
+  .nav-btn.active{background:rgba(255,255,255,.16); color:#fff; font-weight:600;}
+  .side .spacer{flex:1;}
+
+  /* MAIN + TOPBAR */
+  .main{min-width:0; display:flex; flex-direction:column;}
+  .topbar{display:flex; align-items:center; gap:var(--s3); padding:var(--s4) var(--s6); background:var(--surface); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;}
+  .topbar h2{font-size:22px; flex:1;}
+  .btn{display:inline-flex; align-items:center; gap:var(--s2); border:1px solid var(--line); background:var(--surface); color:var(--ink); padding:10px 16px; border-radius:10px; font-size:14px; font-weight:600; transition:transform .15s,box-shadow .15s,background .15s;}
+  .btn svg{width:18px; height:18px;}
+  .btn:hover{transform:translateY(-1px); box-shadow:var(--shadow);}
+  .btn:active{transform:translateY(0) scale(.98);}
+  .btn.primary{background:var(--brand); border-color:var(--brand); color:var(--on-brand);}
+  .btn.primary:hover{background:var(--brand-d);}
+  .btn.danger{color:var(--danger); border-color:color-mix(in srgb,var(--danger) 35%,var(--line));}
+  .icon-btn{width:40px; height:40px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--ink); display:grid; place-items:center; transition:transform .15s,background .15s;}
+  .icon-btn svg{width:19px; height:19px;}
+  .icon-btn:hover{transform:scale(1.08); background:var(--soft);}
+  .icon-btn:active{transform:scale(.94);}
+  .profile{display:flex; align-items:center; gap:var(--s2); padding:4px 12px 4px 4px; border:1px solid var(--line); border-radius:999px; font-size:13px; font-weight:600;}
+  .avatar{width:32px; height:32px; border-radius:50%; background:var(--brand); color:var(--on-brand); display:grid; place-items:center; font-size:12px; font-weight:700;}
+
+  .content{padding:var(--s6); max-width:1180px; width:100%;}
+  .view{animation:fade .22s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  /* CARDS */
+  .greet{margin-bottom:var(--s5);}
+  .greet h3{font-size:28px;}
+  .greet p{margin:4px 0 0; color:var(--ink2);}
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--s4); margin-bottom:var(--s5);}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:var(--s4) var(--s5); box-shadow:var(--shadow);}
+  .stat .label{font-size:13px; color:var(--ink2); font-weight:500;}
+  .stat .value{font-family:'Fraunces',serif; font-size:30px; font-weight:600; margin-top:4px;}
+  .stat .note{font-size:13px; color:var(--ink2); margin-top:2px;}
+  .section-title{font-size:18px; margin:0 0 var(--s3);}
+
+  /* CLASS CHIPS (color-coded per course) */
+  .chip{--h:150; display:flex; gap:var(--s4); align-items:center; padding:var(--s3) var(--s4); margin-bottom:var(--s3); border-radius:12px;
+    background:hsl(var(--h) var(--cs) var(--cl)); border-left:5px solid hsl(var(--h) 45% var(--cb)); color:hsl(var(--h) 35% var(--ci));
+    transition:transform .15s,box-shadow .15s;}
+  .chip:hover{transform:translateY(-2px); box-shadow:var(--shadow);}
+  .chip .when{min-width:84px; font-size:13px; font-weight:600; line-height:1.5;}
+  .chip .info{flex:1; min-width:0;}
+  .chip .code{font-size:12px; font-weight:700; opacity:.85;}
+  .chip .subj{font-family:'Fraunces',serif; font-size:18px; font-weight:600;}
+  .chip .meta{font-size:13px; opacity:.85;}
+  .chip .acts{display:flex; gap:6px;}
+  .chip .acts button{width:36px; height:36px; border-radius:9px; border:1px solid color-mix(in srgb,currentColor 25%,transparent); background:color-mix(in srgb,var(--surface) 70%,transparent); color:inherit; display:grid; place-items:center; transition:transform .15s;}
+  .chip .acts button:hover{transform:scale(1.1);}
+  .chip .acts svg{width:16px; height:16px;}
+  .badge{font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--brand); color:var(--on-brand);}
+  .badge.done{background:transparent; border:1px solid currentColor; opacity:.7;}
+  .chip.done{opacity:.6;}
+
+  /* DAY TABS */
+  .tabs{display:flex; gap:var(--s2); margin-bottom:var(--s4); overflow-x:auto; padding-bottom:2px;}
+  .tabs button{border:1px solid var(--line); background:var(--surface); color:var(--ink2); padding:9px 18px; border-radius:999px; font-weight:600; font-size:14px; white-space:nowrap; transition:background .15s,color .15s,transform .15s;}
+  .tabs button:hover{transform:translateY(-1px);}
+  .tabs button.active{background:var(--brand); border-color:var(--brand); color:var(--on-brand);}
+
+  /* WEEK GRID */
+  .wk-scroll{overflow:auto; max-height:calc(100vh - 150px); border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:var(--shadow);}
+  .wk{display:grid; grid-template-columns:56px repeat(7,minmax(118px,1fr)); min-width:880px;}
+  .wk-head{display:contents;}
+  .wk-head div{position:sticky; top:0; z-index:3; background:var(--surface); padding:12px 8px; text-align:center; font-weight:600; font-size:13.5px; border-bottom:1px solid var(--line);}
+  .wk-head .today{color:var(--brand-d); box-shadow:inset 0 -3px 0 var(--brand);}
+  .wk-times,.wk-col{position:relative; border-left:1px solid var(--line);
+    background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--hr) - 1px),var(--line) calc(var(--hr) - 1px),var(--line) var(--hr));}
+  .wk-times{border-left:0; font-size:11.5px; color:var(--ink2);}
+  .wk-times span{position:absolute; right:8px; transform:translateY(-50%);}
+  .wk-col.today{background-color:color-mix(in srgb,var(--brand) 5%,transparent);}
+  .blk{--h:150; position:absolute; left:4px; right:4px; border-radius:9px; padding:6px 8px; overflow:hidden; font-size:12px; line-height:1.3; text-align:left; border:0; border-left:4px solid hsl(var(--h) 45% var(--cb));
+    background:hsl(var(--h) var(--cs) var(--cl)); color:hsl(var(--h) 35% var(--ci)); transition:transform .15s,box-shadow .15s,z-index 0s;}
+  .blk:hover{transform:scale(1.03); box-shadow:var(--shadow); z-index:2;}
+  .blk b{display:block; font-size:12.5px;}
+
+  .empty{text-align:center; padding:48px 20px; color:var(--ink2);}
+  .empty svg{width:48px; height:48px; margin-bottom:var(--s3); opacity:.8;}
+  .empty h3{color:var(--ink); font-size:20px;}
+  .empty p{max-width:320px; margin:6px auto var(--s4);}
+
+  /* MODALS */
+  .overlay{position:fixed; inset:0; background:rgba(10,18,13,.55); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;}
+  .modal{background:var(--surface); border-radius:20px; width:100%; max-width:440px; max-height:92vh; overflow:auto; padding:var(--s5); box-shadow:0 24px 60px -12px rgba(0,0,0,.4); animation:pop .18s ease;}
+  @keyframes pop{from{opacity:0; transform:scale(.96);} to{opacity:1; transform:none;}}
+  .modal h3{font-size:21px; margin-bottom:var(--s4);}
+  .field{margin-bottom:var(--s3); flex:1;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--ink2); margin-bottom:6px;}
+  .field input,.field select{width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid transparent; background:var(--soft); color:var(--ink); font-size:15px; outline:none; transition:.15s;}
+  .field input:focus,.field select:focus{border-color:var(--brand); background:var(--surface);}
+  .row{display:flex; gap:var(--s3);}
+  .actions{display:flex; gap:var(--s3); margin-top:var(--s4);}
+  .actions .btn{flex:1; justify-content:center;}
+  .confirm p{margin:0 0 var(--s4); line-height:1.5;}
+
+  .toast{position:fixed; bottom:24px; left:50%; transform:translate(-50%,10px); background:var(--ink); color:var(--bg); padding:11px 20px 11px 16px; border-radius:999px; font-size:14px; font-weight:500; opacity:0; pointer-events:none; transition:.25s; z-index:90; display:flex; align-items:center; gap:10px;}
+  .toast::before{content:''; width:9px; height:9px; border-radius:50%; background:#5FAE82;}
+  .toast.err::before{background:#E5705F;}
+  .toast.show{opacity:1; transform:translate(-50%,-6px);}
+
+  /* MOBILE */
+  @media (max-width:860px){
+    .app{grid-template-columns:1fr; padding-bottom:68px;}
+    .side{position:fixed; bottom:0; left:0; right:0; top:auto; height:auto; flex-direction:row; padding:6px; gap:2px; z-index:30; justify-content:space-around;}
+    .brand,.side .spacer{display:none;}
+    .nav-btn{flex-direction:column; gap:2px; font-size:11.5px; padding:8px 4px; justify-content:center; text-align:center; min-height:52px; flex:1;}
+    .topbar{padding:var(--s3) var(--s4);}
+    .topbar h2{font-size:19px;}
+    .topbar .btn .txt,.profile .pid{display:none;}
+    .profile{padding:4px;}
+    .content{padding:var(--s4);}
+    .stats{grid-template-columns:1fr;}
+    .stat{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s3);}
+    .chip{flex-wrap:wrap;}
+    .chip .acts button{width:44px; height:44px;}
+    .icon-btn{width:44px; height:44px;}
+    .row{flex-direction:column; gap:0;}
+    .field input,.field select{font-size:16px;}
+    .wk-scroll{max-height:calc(100vh - 190px);}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="app hidden" id="app">
+  <nav class="side" aria-label="Main">
+    <div class="brand">
+      <div class="mark"><svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="6" y="6" width="14" height="14" rx="3" fill="#4285F4"/><rect x="12" y="12" width="14" height="14" rx="3" fill="#EA4335"/><rect x="9" y="9" width="14" height="14" rx="3" fill="#34A853"/></svg></div>
+      <h1>Class Scheduler</h1>
+    </div>
+    <button class="nav-btn active" data-view="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</button>
+    <button class="nav-btn" data-view="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
+    <button class="nav-btn" data-view="classes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Classes</button>
+    <a class="nav-btn" href="widget.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21h4"/></svg>Reminders</a>
+    <div class="spacer"></div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <h2 id="viewTitle">Today</h2>
+      <button class="btn primary" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="txt">Add class</span></button>
+      <button class="btn" id="exportBtn" title="Download as calendar file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg><span class="txt">Export</span></button>
+      <div class="profile"><span class="avatar" id="avatar">ID</span><span class="pid" id="welcomeLine">—</span></div>
+      <button class="btn" id="themeBtn" type="button" aria-label="Switch to dark mode" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg><span class="txt" id="themeLabel">Dark mode</span></button>
+      <button class="icon-btn" id="logoutBtn" title="Log out" aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></button>
+    </header>
+    <main class="content">
+      <section class="view" id="view-today"></section>
+      <section class="view hidden" id="view-week"></section>
+      <section class="view hidden" id="view-classes"></section>
+    </main>
+  </div>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div id="modalOverlay" class="overlay hidden">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Add a class</h3>
+    <div class="row">
+      <div class="field"><label for="mCode">Course code</label><input id="mCode" type="text" placeholder="e.g. Math3E"></div>
+      <div class="field"><label for="mDay">Day</label>
+        <select id="mDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>
+    </div>
+    <div class="field"><label for="mSubject">Course name</label><input id="mSubject" type="text" placeholder="e.g. Differential Equations"></div>
+    <div class="row">
+      <div class="field"><label for="mStart">Starts</label><input id="mStart" type="time"></div>
+      <div class="field"><label for="mEnd">Ends</label><input id="mEnd" type="time"></div>
+    </div>
+    <div class="field"><label for="mProf">Professor</label><input id="mProf" type="text" placeholder="e.g. Engr. Anorico"></div>
+    <div class="field"><label for="mRoom">Room</label><input id="mRoom" type="text" placeholder="e.g. SnT 1B"></div>
+    <div class="actions">
+      <button id="modalCancel" class="btn">Cancel</button>
+      <button id="modalSave" class="btn primary">Save class</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div id="confirmOverlay" class="overlay hidden" style="z-index:100">
+  <div class="modal confirm" style="max-width:360px" role="alertdialog" aria-modal="true">
+    <p id="confirmMsg"></p>
+    <div class="actions" style="margin-top:0">
+      <button id="confirmCancel" class="btn">Cancel</button>
+      <button id="confirmOk" class="btn danger">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const HUES = [152,205,32,340,265,12,178,48];
+const PX_HOUR = 56; // week grid height per hour
+let currentUser = null, classes = [], currentDay = DAYS[(new Date().getDay()+6)%7], view = "today", editingClassId = null;
+const $ = id => document.getElementById(id);
+
+const ICON = {
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 11v6M14 11v6M7 7l1 13h8l1-13M9 7V4h6v3"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="#8FA499" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M9 15h6"/></svg>'
+};
+
+let toastTimer;
+function showToast(msg, type){
+  const t = $("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (type === "err" ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+function escapeHtml(s){ const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+function to12h(t){
+  if(!t) return "";
+  let [h,m] = t.split(":").map(Number);
+  const suf = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2,"0")} ${suf}`;
+}
+function mins(t){ const [h,m] = (t||"0:0").split(":").map(Number); return h*60 + m; }
+function hue(c){
+  const s = (c.code || c.subject || "").toLowerCase();
+  let h = 0; for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
+  return HUES[h % HUES.length];
+}
+const todayName = () => DAYS[(new Date().getDay()+6)%7];
+const byStart = (a,b) => mins(a.start) - mins(b.start);
+
+/* ---------- SESSION ---------- */
+async function init(){
+  try{
+    const sessionResponse = await fetch("api/auth.php?action=session");
+    const sessionResult = await sessionResponse.json();
+    if(!sessionResponse.ok || sessionResult.status !== "success" || !sessionResult.user){
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+      return;
+    }
+    currentUser = sessionResult.user;
+    $("app").classList.remove("hidden");
+    const sid = currentUser.student_id;
+    $("welcomeLine").textContent = sid;
+    $("avatar").textContent = String(sid).replace(/[^a-z0-9]/gi,"").slice(-2).toUpperCase() || "ID";
+    await loadScheduleFromDB();
+    renderAll();
+    if("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+    setInterval(checkReminders, 15000);
+    setInterval(() => { if(view === "today") renderToday(); }, 60000);
+    checkReminders();
+  }catch(e){
+    localStorage.removeItem("user");
+    window.location.href = "index.html";
+  }
+}
+
+async function loadScheduleFromDB(){
+  try{
+    const r = await fetch("api/schedule.php");
+    if(r.status === 401){ window.location.href = "index.html"; return; }
+    const res = await r.json();
+    if(r.ok && res.status === "success"){
+      classes = (res.data || []).map(c => ({
+        id:c.id, code:c.subject_code || c.code || "", subject:c.subject_title || c.subject || "",
+        day:c.day, start:c.start_time || c.start || "", end:c.end_time || c.end || "",
+        professor:c.professor || "", room:c.room || ""
+      }));
+    }else{
+      classes = [];
+      showToast(res.message || "Couldn't load your schedule", "err");
+    }
+  }catch(e){
+    console.error("API Error:", e);
+    showToast("Can't reach the server. Check your connection.", "err");
+  }
+}
+
+/* ---------- REMINDERS (unchanged behavior) ---------- */
+let firedToday = new Set();
+function checkReminders(){
+  if(!("Notification" in window) || Notification.permission !== "granted" || !currentUser) return;
+  let reminders = {};
+  try{ reminders = JSON.parse(localStorage.getItem(`reminders_${currentUser.id}`) || "{}"); }catch(e){ return; }
+  const now = new Date(), nowMin = now.getHours()*60 + now.getMinutes(), dateKey = now.toDateString();
+  classes.forEach(c => {
+    if(c.day !== todayName()) return;
+    const rem = reminders[c.id];
+    if(!rem || !rem.enabled || !c.start) return;
+    const target = mins(c.start) - (rem.minutes || 0);
+    const key = `${c.id}_${dateKey}_${target}`;
+    if(nowMin === target && !firedToday.has(key)){
+      firedToday.add(key);
+      const label = rem.minutes === 0 ? `${c.subject} is starting now` : `${c.subject} starts in ${rem.minutes} min`;
+      try{ new Notification("Class Reminder ⏰", {body:`${label}${c.room ? " · Room " + c.room : ""}${c.professor ? " (" + c.professor + ")" : ""} · ${to12h(c.start)}`}); }catch(e){}
+    }
+  });
+}
+
+/* ---------- IDLE LOGOUT ---------- */
+let idleTimer;
+function resetIdle(){
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => endSession("index.html?timeout=1"), 20*60*1000);
+}
+async function endSession(destination = "index.html"){
+  try{ await fetch("api/auth.php?action=logout", {method:"POST"}); }catch(e){}
+  localStorage.removeItem("user");
+  window.location.href = destination;
+}
+["click","keydown","mousemove","scroll","touchstart"].forEach(e => document.addEventListener(e, resetIdle, {passive:true}));
+resetIdle();
+
+/* ---------- NAV / THEME ---------- */
+const TITLES = {today:"Today", week:"Week at a glance", classes:"All classes"};
+function setView(v){
+  view = v;
+  document.querySelectorAll(".nav-btn[data-view]").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+  ["today","week","classes"].forEach(n => $("view-"+n).classList.toggle("hidden", n !== v));
+  $("viewTitle").textContent = TITLES[v];
+  renderAll();
+}
+document.querySelectorAll(".nav-btn[data-view]").forEach(b => b.onclick = () => setView(b.dataset.view));
+$("logoutBtn").onclick = () => endSession();
+function updateThemeButton(){
+  const isDark = document.documentElement.dataset.theme === "dark";
+  $("themeLabel").textContent = isDark ? "Light mode" : "Dark mode";
+  $("themeBtn").setAttribute("aria-label", `Switch to ${isDark ? "light" : "dark"} mode`);
+  $("themeBtn").setAttribute("aria-pressed", String(isDark));
+  $("themeBtn").querySelector("svg").innerHTML = isDark
+    ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
+    : '<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>';
+}
+updateThemeButton();
+$("themeBtn").onclick = () => {
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem("theme", next);
+  updateThemeButton();
+};
+
+/* ---------- RENDER ---------- */
+function renderAll(){ renderToday(); renderWeek(); renderClasses(); }
+
+function chipHtml(c, opts = {}){
+  const meta = [c.professor || "Professor not set", c.room || "Room not set"].join(" · ");
+  return `<div class="chip ${opts.status === "done" ? "done" : ""}" style="--h:${hue(c)}">
+    <div class="when">${to12h(c.start)}<br>${to12h(c.end)}</div>
+    <div class="info"><div class="code">${escapeHtml(c.code || "No code")}</div><div class="subj">${escapeHtml(c.subject)}</div><div class="meta">${escapeHtml(meta)}</div></div>
+    ${opts.status ? `<span class="badge ${opts.status === "done" ? "done" : ""}">${opts.status === "now" ? "Now" : opts.status === "next" ? "Up next" : "Done"}</span>` : ""}
+    ${opts.actions ? `<div class="acts"><button data-edit="${c.id}" title="Edit" aria-label="Edit ${escapeHtml(c.subject)}">${ICON.edit}</button><button data-del="${c.id}" title="Delete" aria-label="Delete ${escapeHtml(c.subject)}">${ICON.del}</button></div>` : ""}
+  </div>`;
+}
+function emptyHtml(title, text, withBtn){
+  return `<div class="empty">${ICON.cal}<h3>${title}</h3><p>${text}</p>${withBtn ? `<button class="btn primary" data-add>Add your first class</button>` : ""}</div>`;
+}
+
+function renderToday(){
+  const now = new Date(), nowMin = now.getHours()*60 + now.getMinutes();
+  const list = classes.filter(c => c.day === todayName()).sort(byStart);
+  const hr = now.getHours();
+  const hello = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+  const weekMin = classes.reduce((s,c) => s + Math.max(0, mins(c.end) - mins(c.start)), 0);
+
+  // next upcoming class (today first, then the following days)
+  let next = null, nextLabel = "";
+  const ti = DAYS.indexOf(todayName());
+  for(let o = 0; o < 7 && !next; o++){
+    const d = DAYS[(ti+o)%7];
+    const f = classes.filter(c => c.day === d && (o > 0 || mins(c.start) > nowMin)).sort(byStart)[0];
+    if(f){ next = f; nextLabel = o === 0 ? "Today" : o === 1 ? "Tomorrow" : d; }
+  }
+  const nowC = list.find(c => mins(c.start) <= nowMin && nowMin < mins(c.end));
+  const firstNextToday = list.find(c => mins(c.start) > nowMin);
+
+  $("view-today").innerHTML = `
+    <div class="greet"><h3>${hello}</h3><p>${now.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})}</p></div>
+    <div class="stats">
+      <div class="card stat"><div><div class="label">Classes today</div></div><div class="value">${list.length}</div></div>
+      <div class="card stat"><div><div class="label">Next class</div></div><div><div class="value" style="font-size:20px">${next ? escapeHtml(next.subject) : "None scheduled"}</div>${next ? `<div class="note">${nextLabel}, ${to12h(next.start)}</div>` : ""}</div></div>
+      <div class="card stat"><div><div class="label">This week</div></div><div><div class="value">${(weekMin/60).toFixed(weekMin%60 ? 1 : 0)} hrs</div><div class="note">${classes.length} class${classes.length === 1 ? "" : "es"}</div></div></div>
+    </div>
+    <h3 class="section-title">Today's classes</h3>
+    ${list.length ? list.map(c => chipHtml(c, {status: c === nowC ? "now" : c === firstNextToday ? "next" : mins(c.end) <= nowMin ? "done" : null})).join("")
+      : emptyHtml(classes.length ? "Nothing on today" : "No classes yet", classes.length ? "Enjoy the free day, or check the Week view for what's coming." : "Add your first class and it will show up here.", !classes.length)}`;
+}
+
+function renderWeek(){
+  const root = $("view-week");
+  if(!classes.length){ root.innerHTML = emptyHtml("No classes yet", "Add your first class to see your week laid out here.", true); return; }
+  const startH = Math.max(0, Math.min(8, Math.floor(Math.min(...classes.map(c => mins(c.start)))/60)));
+  const endH = Math.min(24, Math.max(17, Math.ceil(Math.max(...classes.map(c => mins(c.end)))/60)));
+  const H = (endH - startH) * PX_HOUR;
+  const t = todayName();
+  let html = `<div class="wk-scroll"><div class="wk" style="--hr:${PX_HOUR}px"><div class="wk-head"><div></div>${DAYS.map(d => `<div class="${d === t ? "today" : ""}">${d.slice(0,3)}</div>`).join("")}</div>`;
+  html += `<div class="wk-times" style="height:${H}px">${Array.from({length:endH-startH},(_,i) => `<span style="top:${i*PX_HOUR}px">${to12h((startH+i)+":00").replace(":00","")}</span>`).join("")}</div>`;
+  DAYS.forEach(d => {
+    html += `<div class="wk-col ${d === t ? "today" : ""}" style="height:${H}px">` +
+      classes.filter(c => c.day === d).map(c => {
+        const top = (mins(c.start) - startH*60) * PX_HOUR/60, h = Math.max(30, (mins(c.end) - mins(c.start)) * PX_HOUR/60 - 2);
+        return `<button class="blk" data-edit="${c.id}" style="--h:${hue(c)};top:${top}px;height:${h}px" title="${escapeHtml(c.subject)} · ${to12h(c.start)}–${to12h(c.end)}"><b>${escapeHtml(c.code || c.subject)}</b>${escapeHtml(c.room || to12h(c.start))}</button>`;
+      }).join("") + `</div>`;
+  });
+  root.innerHTML = html + `</div></div>`;
+}
+
+function renderClasses(){
+  const list = classes.filter(c => c.day === currentDay).sort(byStart);
+  $("view-classes").innerHTML = `
+    <div class="tabs">${DAYS.map(d => `<button data-day="${d}" class="${d === currentDay ? "active" : ""}">${d.slice(0,3)}</button>`).join("")}</div>
+    ${list.length ? list.map(c => chipHtml(c, {actions:true})).join("") : emptyHtml(`Nothing on ${currentDay}`, "Add a class to this day to see it here.", true)}
+    ${classes.length ? `<div style="margin-top:var(--s5)"><button class="btn danger" id="clearBtn">Clear entire schedule</button></div>` : ""}`;
+}
+
+/* one delegated click handler for all rendered buttons */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-edit],[data-del],[data-add],[data-day],#clearBtn");
+  if(!el) return;
+  if(el.dataset.edit) openModal(el.dataset.edit);
+  else if(el.dataset.del) deleteClass(el.dataset.del);
+  else if(el.dataset.day){ currentDay = el.dataset.day; renderClasses(); }
+  else if(el.id === "clearBtn") clearAll();
+  else openModal(null);
+});
+
+/* ---------- CONFIRM ---------- */
+function showConfirmDialog(message, okText = "Delete"){
+  return new Promise(resolve => {
+    $("confirmMsg").textContent = message;
+    $("confirmOk").textContent = okText;
+    $("confirmOverlay").classList.remove("hidden");
+    $("confirmOk").focus();
+    const done = v => { $("confirmOverlay").classList.add("hidden"); resolve(v); };
+    $("confirmOk").onclick = () => done(true);
+    $("confirmCancel").onclick = () => done(false);
+  });
+}
+
+/* ---------- API ACTIONS ---------- */
+async function post(body){
+  const r = await fetch("api/schedule.php", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  const res = await r.json();
+  return {ok: r.ok && res.status === "success", res};
+}
+async function clearAll(){
+  if(!await showConfirmDialog("Clear your entire schedule? This removes every class on every day.", "Clear all")) return;
+  try{
+    const {ok,res} = await post({action:"clear", _method:"DELETE"});
+    if(ok){ await loadScheduleFromDB(); renderAll(); showToast("Schedule cleared"); }
+    else showToast(res.message || "Couldn't clear the schedule", "err");
+  }catch(e){ showToast("Server error while clearing the schedule", "err"); }
+}
+async function deleteClass(id){
+  if(!await showConfirmDialog("Delete this class?")) return;
+  try{
+    const {ok,res} = await post({action:"delete", _method:"DELETE", id:id});
+    if(ok){ await loadScheduleFromDB(); renderAll(); showToast("Class deleted"); }
+    else showToast(res.message || "Couldn't delete the class", "err");
+  }catch(e){ showToast("Server error while deleting", "err"); }
+}
+
+/* ---------- ADD / EDIT MODAL ---------- */
+function openModal(id){
+  editingClassId = id;
+  const c = id ? classes.find(x => String(x.id) === String(id)) : null;
+  $("modalTitle").textContent = c ? "Edit class" : "Add a class";
+  $("mCode").value = c ? c.code : "";
+  $("mSubject").value = c ? c.subject : "";
+  $("mDay").value = c ? c.day : (view === "classes" ? currentDay : todayName());
+  $("mStart").value = c ? c.start : "";
+  $("mEnd").value = c ? c.end : "";
+  $("mProf").value = c ? c.professor : "";
+  $("mRoom").value = c ? c.room : "";
+  $("modalOverlay").classList.remove("hidden");
+  $("mCode").focus();
+}
+const closeModal = () => $("modalOverlay").classList.add("hidden");
+$("addBtn").onclick = () => openModal(null);
+$("modalCancel").onclick = closeModal;
+$("modalOverlay").addEventListener("click", e => { if(e.target === $("modalOverlay")) closeModal(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
+
+$("modalSave").onclick = async () => {
+  const code = $("mCode").value.trim(), subject = $("mSubject").value.trim(), day = $("mDay").value,
+        start = $("mStart").value, end = $("mEnd").value, professor = $("mProf").value.trim(), room = $("mRoom").value.trim();
+  if(!code || !subject || !start || !end){ showToast("Add a course code, course name, and times", "err"); return; }
+  if(start >= end){ showToast("End time must be after start time", "err"); return; }
+
+  const clash = classes.find(c => c.day === day && String(c.id) !== String(editingClassId) && mins(c.start) < mins(end) && mins(start) < mins(c.end));
+  if(clash && !await showConfirmDialog(`Schedule conflict: this overlaps ${clash.code || clash.subject} (${to12h(clash.start)}–${to12h(clash.end)}). Save anyway?`, "Save anyway")) return;
+
+  try{
+    const {ok,res} = await post({id:editingClassId, subject_code:code, subject_title:subject, day, start_time:start, end_time:end, professor, room});
+    if(ok){
+      const wasEdit = !!editingClassId;
+      await loadScheduleFromDB();
+      currentDay = day; renderAll(); closeModal();
+      showToast(wasEdit ? "Class updated" : "Class added");
+      editingClassId = null;
+    }else showToast(res.message || "Couldn't save the class", "err");
+  }catch(e){ showToast("Server error while saving", "err"); }
+};
+
+/* ---------- EXPORT (.ics, repeats weekly) ---------- */
+$("exportBtn").onclick = () => {
+  if(!classes.length){ showToast("Add a class before exporting", "err"); return; }
+  const esc = s => String(s||"").replace(/([,;\\])/g,"\\$1");
+  const stamp = (d,t) => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}T${t.replace(":","")}00`;
+  const ti = DAYS.indexOf(todayName());
+  const lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Class Scheduler//EN"];
+  classes.forEach(c => {
+    const d = new Date(); d.setDate(d.getDate() + (DAYS.indexOf(c.day) - ti + 7) % 7);
+    lines.push("BEGIN:VEVENT", `UID:class-${c.id}@class-scheduler`, `DTSTAMP:${stamp(new Date(),"00:00")}`,
+      `DTSTART:${stamp(d,c.start)}`, `DTEND:${stamp(d,c.end)}`, "RRULE:FREQ=WEEKLY",
+      `SUMMARY:${esc((c.code ? c.code + " " : "") + c.subject)}`, `LOCATION:${esc(c.room)}`, `DESCRIPTION:${esc(c.professor)}`, "END:VEVENT");
+  });
+  lines.push("END:VCALENDAR");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lines.join("\r\n")], {type:"text/calendar"}));
+  a.download = "class-schedule.ics";
+  document.body.appendChild(a); a.click(); a.remove();
+  showToast("Schedule exported");
+};
+
+init();
+</script>
+</body>
+</html>

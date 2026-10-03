@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Scheduler — Welcome</title>
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #28593F;
+    --forest-dark: #1E4430;
+    --sage-soft: #EBF3ED;
+    --cream: #F4EFE6;
+    --ink: #1D2B22;
+    --ink-soft: #66756B;
+    --line: #DCE5DE;
+    --radius: 20px;
+    --shadow: 0 16px 40px -12px rgba(0,0,0,0.18);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  h1, h2, h3 { font-family: 'Fraunces', serif; margin: 0; }
+  .hidden { display: none !important; }
+  button { font-family: inherit; cursor: pointer; }
+  input { font-family: inherit; }
+
+  /* CARD LAYOUT */
+  .auth-card {
+    width: 100%;
+    max-width: 860px;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    min-height: 540px;
+  }
+
+  /* LEFT HERO PANEL */
+  .hero-panel {
+    flex: 1;
+    background: repeating-linear-gradient(
+      -45deg,
+      #28593F,
+      #28593F 10px,
+      #235038 10px,
+      #235038 20px
+    );
+    color: #fff;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .dots-indicator {
+    display: flex;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+  }
+
+  .app-glass-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-top: 30px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(4px);
+  }
+
+  .hero-panel h1 {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  .hero-panel p {
+    font-size: 15px;
+    color: #C3DFC2;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 320px;
+  }
+
+  .hero-footer {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #A3C9B8;
+    letter-spacing: .08em;
+  }
+
+  /* RIGHT FORM PANEL */
+  .form-panel {
+    flex: 1.1;
+    padding: 40px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .theme-control {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .theme-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--sage-soft);
+    color: var(--ink);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background .2s, transform .15s;
+  }
+  .theme-btn:hover { transform: translateY(-1px); }
+  .theme-btn svg { width: 16px; height: 16px; }
+
+  /* TOGGLE SWITCH */
+  .segmented-control {
+    display: flex;
+    background: var(--sage-soft);
+    padding: 4px;
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .segmented-control button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 999px;
+    transition: .2s;
+  }
+  .segmented-control button.active {
+    background: var(--forest);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  /* FORM INPUTS */
+  .field {
+    margin-bottom: 18px;
+  }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .input-wrap {
+    position: relative;
+  }
+  .field input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+    background: var(--sage-soft);
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: .15s;
+  }
+  .field input:focus {
+    border-color: var(--forest);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(40,89,63,0.12);
+  }
+  
+  .toggle-pw {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 16px;
+    padding: 0;
+  }
+
+  .forgot-link-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -6px;
+    margin-bottom: 18px;
+  }
+  .forgot-link-btn {
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--forest);
+    padding: 0;
+  }
+  .forgot-link-btn:hover {
+    text-decoration: underline;
+  }
+
+  .primary-btn {
+    width: 100%;
+    background: var(--forest);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 0;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: .15s;
+  }
+  .primary-btn:hover {
+    background: var(--forest-dark);
+  }
+
+  /* RESET SECTION STYLES */
+  .reset-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .reset-section p {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin: 0 0 20px 0;
+  }
+  .secondary-btn {
+    width: 100%;
+    background: var(--sage-soft);
+    color: var(--forest);
+    border: none;
+    border-radius: 12px;
+    padding: 13px 0;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .secondary-btn:hover {
+    background: #dceada;
+  }
+
+  .form-note {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 24px;
+    line-height: 1.5;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    padding: 11px 22px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: .25s;
+    z-index: 60;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -6px); }
+
+  @media (max-width: 768px) {
+    .auth-card { flex-direction: column; }
+    .hero-panel { padding: 30px; }
+  }
+
+  /* dark mode */
+  [data-theme=dark]{--cream:#101712; --sage-soft:#222F27; --ink:#E8F0EA; --ink-soft:#9FB2A5; --line:#2C3A32;}
+  [data-theme=dark] .auth-card{background:#18221C;}
+  [data-theme=dark] .field input:focus{background:#18221C;}
+  [data-theme=dark] .secondary-btn{color:#9FD6B6;}
+  [data-theme=dark] .forgot-link-btn{color:#7CC79D;}
+
+  /* micro-interactions */
+  .primary-btn,.secondary-btn{transition:transform .15s, box-shadow .15s, background .15s;}
+  .primary-btn:hover{transform:translateY(-1px); box-shadow:0 8px 18px -8px rgba(40,89,63,.6);}
+  .primary-btn:active,.secondary-btn:active{transform:scale(.98);}
+  .toggle-pw{transition:transform .15s; width:32px; height:32px;}
+  .toggle-pw:hover{transform:translateY(-50%) scale(1.15);}
+  .segmented-control button{transition:background .2s, color .2s, box-shadow .2s;}
+  :focus-visible{outline:2px solid var(--forest); outline-offset:2px;}
+  #authForm,#resetSection{animation:swap .22s ease;}
+  @keyframes swap{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* inline validation */
+  .field .msg{display:block; min-height:16px; margin-top:6px; font-size:12px; color:var(--ink-soft);}
+  .field.invalid input{border-color:var(--danger,#B4483A); background:#fff;}
+  .field.invalid .msg{color:var(--danger,#B4483A);}
+  .field.valid input{border-color:#4E9A70;}
+  [data-theme=dark] .field.invalid input{background:#18221C;}
+  .extras{display:flex; align-items:center; justify-content:space-between; gap:12px; margin:-4px 0 14px;}
+  .remember{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); cursor:pointer; min-height:32px;}
+  .remember input{width:18px; height:18px; accent-color:var(--forest);}
+
+  /* mobile */
+  @media (max-width:768px){
+    body{padding:12px; align-items:flex-start;}
+    .auth-card{min-height:0;}
+    .hero-panel{padding:24px;} .hero-panel h1{font-size:26px;} .app-glass-icon{margin:20px 0 14px;}
+    .hero-panel p{font-size:14px;} .hero-footer{display:none;}
+    .form-panel{padding:24px 22px 28px;}
+    .field input{font-size:16px; padding:15px 16px;}
+    .segmented-control button,.primary-btn,.secondary-btn{min-height:48px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="auth-card">
+  <!-- LEFT HERO PANEL -->
+  <div class="hero-panel">
+    <div>
+      <div class="dots-indicator">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="app-glass-icon">⭐</div>
+      <h1>Class Scheduler</h1>
+      <p>Attend class on time. Keep every lecture, lab, and room number in one page.</p>
+    </div>
+    <div class="hero-footer">PLAN TODAY · SKIP NOTHING</div>
+  </div>
+
+  <!-- RIGHT FORM PANEL -->
+  <div class="form-panel">
+    <div class="theme-control">
+      <button type="button" class="theme-btn" id="themeBtn" aria-label="Switch to dark mode" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>
+        <span id="themeLabel">Dark mode</span>
+      </button>
+    </div>
+    <div class="segmented-control" id="segmentedControl">
+      <button id="tabSignUp" class="active">Sign Up</button>
+      <button id="tabLogIn">Log In</button>
+    </div>
+
+    <!-- MAIN LOGIN / SIGNUP FORM -->
+    <form id="authForm" onsubmit="return false;">
+      <div class="field">
+        <label for="studentId">Student ID</label>
+        <input id="studentId" type="text" placeholder="e.g. M2024-00***" required autocomplete="username">
+        <span class="msg" data-msg="studentId"></span>
+      </div>
+
+      <div class="field" id="emailGroup">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="ClassSched123@example.com" autocomplete="email">
+        <span class="msg" data-msg="email"></span>
+      </div>
+
+      <div class="field" id="passwordGroup">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input id="password" type="password" placeholder="••••••••" required>
+          <button type="button" id="togglePw" class="toggle-pw" aria-label="Show or hide password">👁</button>
+        </div>
+        <span class="msg" data-msg="password"></span>
+      </div>
+
+      <div class="extras hidden" id="forgotWrap">
+        <label class="remember"><input type="checkbox" id="rememberMe"> Remember my Student ID</label>
+        <button type="button" class="forgot-link-btn" id="openResetView">Forgot password?</button>
+      </div>
+
+      <button id="submitBtn" type="submit" class="primary-btn">Create Account</button>
+    </form>
+
+    <!-- INLINE RESET PASSWORD SECTION -->
+    <div id="resetSection" class="reset-section hidden">
+      <h3>Reset Password</h3>
+      <p>Enter your email address to receive a password reset link.</p>
+      
+      <div class="field">
+        <label for="resetEmail">Email Address</label>
+        <input id="resetEmail" type="email" placeholder="ClassSched123@example.com">
+      </div>
+
+      <button id="sendResetBtn" type="button" class="primary-btn">Send Reset Link</button>
+      <button id="backToLoginBtn" type="button" class="secondary-btn">Back to Log In</button>
+    </div>
+
+    <div class="form-note">
+      Your schedule is saved to your Student ID on this device, so it's here next time you sign in.
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  let mode = 'signup'; // 'signup', 'login', or 'reset'
+
+  const $ = id => document.getElementById(id);
+
+  function updateThemeButton() {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    $('themeLabel').textContent = isDark ? 'Light mode' : 'Dark mode';
+    $('themeBtn').setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+    $('themeBtn').setAttribute('aria-pressed', String(isDark));
+  }
+  updateThemeButton();
+  $('themeBtn').onclick = () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('theme', next);
+    updateThemeButton();
+  };
+
+  function showToast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2000);
+  }
+
+  /* ---- inline validation ---- */
+  const RULES = {
+    studentId: v => v.trim().length >= 4 ? "" : "Enter your Student ID",
+    email: v => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.trim()) ? "" : "Enter a valid email, like name@example.com",
+    password: v => (mode === 'signup' && v.length < 8) ? "Use at least 8 characters" : (v ? "" : "Enter your password")
+  };
+  function validate(id, show = true){
+    const input = $(id), msg = RULES[id](input.value), box = input.closest('.field');
+    if(show){
+      box.classList.toggle('invalid', !!msg);
+      box.classList.toggle('valid', !msg && !!input.value);
+      box.querySelector('.msg').textContent = msg;
+    }
+    return !msg;
+  }
+  ['studentId','email','password'].forEach(id => {
+    $(id).addEventListener('blur', () => { if($(id).value || $(id).closest('.field').classList.contains('invalid')) validate(id); });
+    $(id).addEventListener('input', () => { if($(id).closest('.field').classList.contains('invalid')) validate(id); });
+  });
+
+  /* ---- remember me + timeout notice ---- */
+  const savedId = localStorage.getItem('rememberedId');
+  if(savedId){ $("studentId").value = savedId; $("rememberMe").checked = true; }
+  if(new URLSearchParams(location.search).get('timeout')) setTimeout(() => showToast("You were signed out after 20 minutes of inactivity"), 300);
+
+  // Switch to Sign Up Tab
+  $("tabSignUp").onclick = () => {
+    mode = 'signup';
+    $("tabSignUp").classList.add("active");
+    $("tabLogIn").classList.remove("active");
+    
+    $("authForm").classList.remove("hidden");
+    $("resetSection").classList.add("hidden");
+    $("emailGroup").classList.remove("hidden");
+    $("forgotWrap").classList.add("hidden");
+    $("submitBtn").textContent = "Create Account";
+  };
+
+  // Switch to Log In Tab
+  $("tabLogIn").onclick = () => {
+    showLoginView();
+  };
+
+  function showLoginView() {
+    mode = 'login';
+    $("tabLogIn").classList.add("active");
+    $("tabSignUp").classList.remove("active");
+    
+    $("authForm").classList.remove("hidden");
+    $("resetSection").classList.add("hidden");
+    $("emailGroup").classList.add("hidden");
+    $("forgotWrap").classList.remove("hidden");
+    $("submitBtn").textContent = "Log In";
+  }
+
+  // Show Inline Reset Password Form
+  $("openResetView").onclick = () => {
+    mode = 'reset';
+    $("authForm").classList.add("hidden");
+    $("resetSection").classList.remove("hidden");
+  };
+
+  $("backToLoginBtn").onclick = () => {
+    showLoginView();
+  };
+
+  // Password visibility toggle
+  $("togglePw").onclick = () => {
+    const pw = $("password");
+    pw.type = pw.type === "password" ? "text" : "password";
+  };
+
+  // Submit Handler (Login / Sign Up)
+  $("submitBtn").onclick = async () => {
+    const studentId = $("studentId").value.trim();
+    const email = $("email").value.trim();
+    const password = $("password").value;
+
+    const checks = [validate('studentId'), validate('password')];
+    if (mode === 'signup') checks.push(validate('email'));
+    if (checks.includes(false)) {
+      showToast("Fix the highlighted fields to continue");
+      return;
+    }
+
+    const endpoint = mode === 'signup' ? 'api/auth.php?action=register' : 'api/auth.php?action=login';
+    const payload = mode === 'signup' 
+      ? { student_id: studentId, email: email, password: password }
+      : { student_id: studentId, password: password };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+
+      if (response.ok && result.status === 'success') {
+        if (mode === 'signup') {
+          showToast("Account created! Please log in.");
+          $("password").value = "";
+          showLoginView();
+        } else {
+          if ($("rememberMe").checked) localStorage.setItem('rememberedId', studentId); else localStorage.removeItem('rememberedId');
+          showToast("Welcome back!");
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 800);
+        }
+      } else {
+        showToast(result.message || "Authentication failed");
+      }
+    } catch (e) {
+      showToast("Server connection error");
+    }
+  };
+
+  // Send Password Reset Link
+  $("sendResetBtn").onclick = async () => {
+    const resetEmail = $("resetEmail").value.trim();
+
+    if (!resetEmail) {
+      showToast("Please enter your email address");
+      return;
+    }
+
+    try {
+      const response = await fetch('api/auth.php?action=request_reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail })
+      });
+      const result = await response.json();
+
+      if (response.ok && result.status === 'success') {
+        showToast("Reset link sent to your email!");
+        setTimeout(() => showLoginView(), 1500);
+      } else {
+        showToast(result.message || "Failed to send reset link");
+      }
+    } catch (e) {
+      showToast("Server connection error");
+    }
+  };
+</script>
+</body>
+</html>
